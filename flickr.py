@@ -25,19 +25,31 @@ def params_unique_combination(baseurl, params_d, private_keys=["api_key"]):
             res.append("{}-{}".format(k, params_d[k]))
     return baseurl + "_".join(res)
 
-def search_flickr_by_tags(tags):
+def search_flickr(method=None, photo_id=None, tags=None, ppg=None):
+    '''Input either "PhotosSearch" or "getInfo" as your method'''
     if not FLICKR_API_KEY:
         raise Exception('Flickr API Key is missing!')
 
-    baseurl = "https://api.flickr.com/services/rest/"
-    params_diction = {
-        "method": "flickr.photos.search",
+    if method == "PhotosSearch":
+        baseurl = "https://api.flickr.com/services/rest/"
+        params_diction = {
+            "method": "flickr.photos.search",
+            "format": "json",
+            "api_key": FLICKR_API_KEY,
+            "tags": tags,
+            "per_page": ppg,
+            "nojsoncallback": 1
+        }
+    elif method == "getInfo":
+        baseurl = "https://api.flickr.com/services/rest/"
+        params_diction = {
+        "method": "flickr.photos.getInfo", 
         "format": "json",
         "api_key": FLICKR_API_KEY,
-        "tags": tags,
-        "per_page": 10,
-        "nojsoncallback": 1
-    }
+        "photo_id": photo_id
+        }
+    else:
+        raise Exception('Incorrect method passed, please provide PhotosSearch or getInfo and required parameters')
 
     unique_ident = params_unique_combination(baseurl,params_diction)
     if unique_ident in CACHE_DICTION:
@@ -65,7 +77,7 @@ CACHE_DICTION = load_cache_json()
 if DEBUG:
     print(CACHE_DICTION)
 
-results = search_flickr_by_tags('sunset summer')
+results = search_flickr(method = 'PhotosSearch', tags = 'sunset summer', ppg = 10)
 
 photos_list = []
 for r in results['photos']['photo']:
