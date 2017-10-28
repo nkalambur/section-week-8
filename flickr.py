@@ -68,9 +68,17 @@ class Photo:
         self.title = photo_dict['title']
         self.id = photo_dict['id']
         self.owner = photo_dict['owner']
+        try:
+            self.owner_username = photo_dict['owner']['username']
+        except:
+            self.owner_username = None
 
     def __str__(self):
-        return '{0} by {1}'.format(self.title, self.owner)
+        if self.owner_username:
+            return '{0} by {1} aka {}'.format(self.title, self.owner, self.owner_username)
+        else:
+            return '{0} by {1}'.format(self.title, self.owner)
+
 
 
 CACHE_DICTION = load_cache_json()
@@ -81,7 +89,10 @@ results = search_flickr(method = 'PhotosSearch', tags = 'sunset summer', ppg = 1
 
 photos_list = []
 for r in results['photos']['photo']:
+    photo_id = r['id']
+    search_flickr(method='getInfo', photo_id)
     photos_list.append(Photo(r))
+
 
 print()
 print("= compare these outputs = >> ")
